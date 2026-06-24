@@ -224,6 +224,13 @@ Batch across multiple slides. Keep batches under ~50 operations to avoid timeout
 - No shapes or text boxes outside existing placeholders
 - No formatting changes (font, size, color, bold, alignment)
 
+**TABLE slides (any layout with a `table` element):**
+- Before batching TABLE operations, call `get_object` on the slide and parse all `tableRows[r].tableCells[c]` — note which cells have `text.textElements` content vs. are empty
+- For cells **with content**: `deleteText` (type: ALL) + `insertText`, same as any placeholder
+- For cells **without content**: `insertText` only — `deleteText` on an empty cell throws "startIndex 0 must be less than endIndex 0" and fails the entire batch
+- Both operations require `cellLocation: {"rowIndex": R, "columnIndex": C}` alongside `objectId`
+- The top-left corner cell [row 0, col 0] in comparison tables is always empty — skip it entirely
+
 **BG slides (Cover, Section Dividers):** These slides have no API-accessible text placeholders. Duplicate them for correct visual design. Note in the final output which slides need manual text entry.
 
 **Fallback slides:** For slides flagged `needsGraphics`, insert `⚠ NEEDS GRAPHICS` as the first line of the body text, followed by the slide content.
